@@ -3,10 +3,30 @@ using UnityEngine.InputSystem;
 
 public class MovePC : MonoBehaviour
 {
-    public float speed = 5f;
+    public float moveSpeed = 5f;
+    public float mouseSensitivity = 2f;
+
+    private float rotationX = 0f;
+
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
 
     void Update()
     {
+        // Rotação com o mouse
+        float mouseX = Mouse.current.delta.x.ReadValue() * mouseSensitivity;
+        float mouseY = Mouse.current.delta.y.ReadValue() * mouseSensitivity;
+
+        rotationX -= mouseY;
+        rotationX = Mathf.Clamp(rotationX, -80f, 80f);
+
+        transform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
+        transform.parent.Rotate(Vector3.up * mouseX);
+
+        // Movimentação com teclado
         Vector2 input = Vector2.zero;
 
         if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed)
@@ -18,7 +38,7 @@ public class MovePC : MonoBehaviour
         if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
             input.x += 1;
 
-        Vector3 dir = new Vector3(input.x, 0, input.y) * speed * Time.deltaTime;
-        transform.Translate(dir, Space.World);
+        Vector3 dir = (transform.forward * input.y + transform.right * input.x) * moveSpeed * Time.deltaTime;
+        transform.parent.Translate(dir, Space.World);
     }
 }
